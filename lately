@@ -1,0 +1,32 @@
+#!/bin/bash
+
+DEFAULT=7
+action=$1
+days=$2
+[ -z $2 ] && days=$DEFAULT
+
+TMP_FILE=/tmp/lately.txt
+CUTOFF=$(date --date="$days days ago"  +%F)
+if [ $? != 0 ]; then echo Usage:; action="usage"; fi
+CUTOFF=$(date --date="$CUTOFF" +%s)
+[ -e $TMP_FILE ] && rm $TMP_FILE
+
+[ "$action" = "usage" ] && {
+	echo "    lately [days]"
+	echo "      generates a list of completed tasks during the last $DEFAULT days."
+	echo "      Optional argument (integer) overrides number of days."
+	echo ""
+	exit 0
+}
+
+while read line; do
+	ll=($line)
+	ll=${ll[1]}
+	ll=$(date --date="$ll" +%s)
+	[ $ll -lt $CUTOFF ] || echo $line >> $TMP_FILE
+done < $TODO_DIR/done.txt
+
+if [ ! -e $TMP_FILE ]; then echo "No completed tasks in the past $days day(s)."; exit 0; fi
+
+$TODO_FULL_SH -p lf $TMP_FILE
+
