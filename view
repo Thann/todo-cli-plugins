@@ -190,6 +190,8 @@ function date_check() {
     return 0
 }
 
+if [ "$action" = "usage" ]; then usage; exit 0; fi
+
 # Validate the input options
 re="^(help|project|context|date|nodate|future|past|today|tomorrow|yesterday|([+-][0-9]+|[0-9]+)(days|weeks|months|years))$"
 if [[ "$option" =~ $re ]]; then
