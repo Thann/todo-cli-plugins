@@ -3,7 +3,10 @@
 DEFAULT=7
 action=$1
 days=$2
-[ -z $2 ] && days=$DEFAULT
+if [ -z $2 ]; then
+	days=$DEFAULT
+	[ -z $TODOTXT_LATELY_DEFAULT ] || days=$TODOTXT_LATELY_DEFAULT
+fi
 
 TMP_FILE=/tmp/lately.txt
 CUTOFF=$(date --date="$days days ago"  +%F)
