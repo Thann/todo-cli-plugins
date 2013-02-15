@@ -11,7 +11,10 @@ usage="vim [FILE]"
 
 file=$2
 [ -z $2 ] && file="todo.txt"
+file=$TODO_DIR/$file
+[ -e $file ] || file=${file}.txt
+if [ ! -e $file ];then echo "ERROR: no such file: $file"; exit 1; fi
 
 [ -z $EDITOR ] && EDITOR=vim
-$EDITOR $TODO_DIR/$file
+$EDITOR $file
 
