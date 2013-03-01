@@ -2,7 +2,7 @@
 # A simple tool to quickly edit one task in todo.txt.
 # Requires bash version 4 or greater because it supports 'read -i'
 
-usage="edit ITEM# [SRC]"
+usage="edit [ITEM#] [SRC]"
 
 [ "$1" = "usage" ] && {
 	echo "    $usage"
@@ -14,31 +14,45 @@ usage="edit ITEM# [SRC]"
 
 _fail_usage(){ echo "usage: $TODO_SH $usage"; exit 1; }
 
+### Parse and validate inputs.
 task_num=$2
-if [ -z $2 ]; then _fail_usage; fi
 src=$3
-[ -z $3 ] && src=todo.txt
-src="$TODO_DIR/$src"
 
-# validate inputs.
-if [ ! -e $src ]; then echo Source File: $src, does not exist!; exit 1; fi
-if ! [[ $task_num =~ ^[0-9]+$ ]]; then
-	echo ERROR: \'$task_num\' is not a valid line number.
-	_fail_usage
+# Allow skipping 'ITEM#' param.
+if ! [[ $task_num =~ ^[0-9]+$ ]]; then src=$task_num; task_num=0; fi
+
+# Normalize and default SRC
+[ -z $src ] && src="todo"
+src="$TODO_DIR/$src"
+if [ ! -e $src ]; then
+	src=${src}.txt
+	if [ ! -e $src ]; then
+		echo Source File: $src, does not exist!; exit 1;
+	fi
 fi
+
+### Multi-line edit.
+if [ $task_num == "0" ]; then
+	[ -z $EDITOR ] && EDITOR=vim
+	$EDITOR $src
+	exit 0;
+fi
+
+### Single-line edit.
+# Ensure the specified task number exists.
 max_num=$(sed -n '$=' $src)
 if [ $task_num -gt $max_num ]; then
 	echo ERROR: ITEM# must be $max_num or less.
 	_fail_usage
 fi
 
-# read original task.
+# Read original task.
 item=$(sed -n ${task_num}p $src)
 if [ $? != 0 ]; then exit 1; fi
 
 # accept new task description.
 read -e -p "$task_num: " -i """$item""" new_item
-if [ $? != 0 ]; then echo "ERROR: Requires Bash version 4 or greater!"; exit 1; fi
+if [ $? != 0 ]; then echo "ERROR: Requires Bash version 4 or greater!"; exit 99; fi
 
 # print new task to file.
 sed -i "$task_num c \\$new_item" $src
