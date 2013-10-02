@@ -2,11 +2,13 @@
 # A simple tool to quickly edit one task in todo.txt.
 # Requires bash version 4 or greater because it supports 'read -i'
 
-usage="edit [ITEM#] [SRC]"
+[ -z $EDITOR ] && EDITOR=vim
 
+usage="edit [ITEM#] [SRC]"
 [ "$1" = "usage" ] && {
 	echo "    $usage"
-	echo "      Edits the given task. (Requires Bash 4+)"
+	echo "      If ITEM# given, edits the task. (Requires Bash 4+)"
+	echo "      Otherwise Edits SRC with \$EDITOR ($EDITOR)."
 	echo "      Optional argument (file name) specify the source file."
 	echo ""
 	exit 0
@@ -33,7 +35,6 @@ fi
 
 ### Multi-line edit.
 if [ $task_num == "0" ]; then
-	[ -z $EDITOR ] && EDITOR=vim
 	$EDITOR $src
 	exit 0;
 fi
